@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Crypto Assistant</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #f4f6f8;
+            color: #2c3e50;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            color: #34495e;
+        }
+
+        #queryInput {
+            width: calc(100% - 140px);
+            padding: 12px 15px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #2980b9, #2471a3);
+        }
+
+        #result {
+            background-color: white;
+            border: 1px solid #dcdde1;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            white-space: pre-wrap;
+            min-height: 100px;
+        }
+
+        .loading {
+            color: #7f8c8d;
+            font-style: italic;
+        }
+
+        div {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        @media (max-width: 600px) {
+            div {
+                flex-direction: column;
+            }
+
+            #queryInput {
+                width: 100%;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>AI Crypto Assistant</h1>
+    <div>
+        <input id="queryInput" type="text" placeholder="Например, что происходит с Биткоином?" />
+        <button onclick="sendQuery()">Спросить</button>
+    </div>
+    <div id="result">Введите вопрос о любой криптовалюте, чтобы получить информацию.</div>
+
+    <script>
+        async function sendQuery() {
+            const query = document.getElementById("queryInput").value.trim();
+            const resultDiv = document.getElementById("result");
+
+            if (!query) {
+                resultDiv.textContent = "Пожалуйста, введите вопрос.";
+                return;
+            }
+
+            resultDiv.innerHTML = '<span class="loading">Ищем информацию...</span>';
+
+            try {
+                const response = await fetch("/query", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({query})
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Сервер вернул ошибку: ${response.status}`);
+                }
+
+                const data = await response.json();
+                resultDiv.textContent = data.answer;
+            } catch (error) {
+                console.error("Ошибка:", error);
+                resultDiv.textContent = `Ошибка: ${error.message}`;
+            }
+        }
+
+        document.getElementById("queryInput").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                sendQuery();
+            }
+        });
+    </script>
+</body>
+</html>
